@@ -1,0 +1,30 @@
+#!/bin/bash
+echo "==>  gathering system facts"
+# operating system
+#   Darwin = OSX
+#   Linux  = Linux
+#   <>     = Windows
+echo "OS: " `uname`
+echo "HOSTNAME: " `hostname`
+echo "USER: " `whoami`
+echo "PWD: " `pwd`
+
+
+echo "==>  copying program files"
+# copy bin/whomst to /usr/bin
+sudo cp ./bin/whomst /usr/local/bin/whomst
+# ensure that whomst still has exec tag
+ls -la /usr/local/bin/whomst
+
+
+echo "==>  test installation"
+cd ./tests
+x=`whomst | grep foo`
+# echo "x=$x"
+[ "$x" == "foo" ] && echo "ok" || echo "invalid"
+y=`whomst | grep bar`
+# echo "y=$y"
+[ "$y" == "bar" ] && echo "ok" || echo "invalid"
+z=`whomst | grep new`
+# echo "z=$z"
+[ "$z" == "new" ] && echo "ok" || echo "invalid"
