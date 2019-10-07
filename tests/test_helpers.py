@@ -26,7 +26,7 @@ def test_whomst_ignoreincluded():
 def test_whomst_cleanlines():
     cursor = {'import foo', 'import foo, bar', 'import math.floor', 'import os'}
     clean = whomst.clean_lines(cursor)
-    assert clean == {'bar', 'foo', 'math', 'os'}
+    assert clean == ['bar', 'foo', 'math', 'os']
 
 
 def test_whomst_readimports():
