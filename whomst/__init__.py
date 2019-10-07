@@ -5,12 +5,21 @@
 ~$ whomst <path>
 ~$ whomst . > requirements.txt && pip install -r requirements.txt
 """
-def look(path="."):
-    # ENTRYPOINT
-    import os
-    cursor = set()
-    result = set()
-    answer = []
+import os
+
+
+#@cov
+def look(path):
+    """
+    param: path: relative or absolute path to top-level directory
+    param: exclude: set of dirs to omit when found in path
+
+    - create cursor
+    - walk tree with generator loop
+    - append to cursor in loop
+    - clean all at once
+    - omit standard library
+    """
     exclude = set([
         "__pycache__",
         "lib",
@@ -21,63 +30,85 @@ def look(path="."):
         "site-packages",
         "*.egg-info",
     ])
+    cursor = set()
+    for full_name in walk_files(path, exclude):
+        imports = read_imports(full_name)
+        cursor = cursor.union(imports)
+    clean = clean_lines(cursor)
+    ready = ignore_included(clean)
+    return sorted(ready)
+    # ----------------------- EOF -----------------------
 
-    # GATHER LIST OF ALL RELEVANT FILES
+
+# @cov
+def between(s, start, end):
+    return (s.split(start))[1].split(end)[0].strip()
+
+
+# @cov
+def walk_files(path, exclude):
+    # GENERATOR WITH ALL RELEVANT FILES
     for root, dirs, files in os.walk(path):
         if any(excl in root for excl in exclude):
             continue
         files[:] = [f for f in files if f.endswith(".py")]
-        for fname in files:
-            # EXTRACT IMPORT STATEMENT LINES
-            with open(os.path.join(root, fname)) as f:
-                file_data = f.read()
-                for line in file_data.splitlines():
-                    if "import" in line and line.startswith(("import", "from")):
-                        cursor.add(line)
+        for file in files:
+            yield os.path.join(root, file)
 
+
+#@cov
+def read_imports(full_name):
+    # COLLECT ALL RELEVANT STATEMENTS AS ITEMS
+    # IF LINE HAS `()` CAPTURE UNTIL IT CLOSES
+    cursor = set()
+    with open(full_name) as f:
+        file_data = f.read()
+        for line in file_data.splitlines():
+            # if ("import" in line) and ("()" in line):
+                # capture all till closed
+            if "import" in line and line.startswith(("import", "from")):
+                cursor.add(line)
+    return cursor
+
+
+#@cov
+def clean_lines(cursor):
     # EXTRACT PACKAGE NAMES FROM IMPORT STATEMENTS
+    result = set()
     for line in cursor:
         if line.startswith("import"):
-            ln = line.strip("import").split(",")
+            ln = line.replace("import", "").split(",")
             ln = list(map(str.strip, ln))
             for l in ln:
                 if " as " in l:
                     l = l.split(" as ")[0].strip()
                     result.add(l)
+                elif "." in l:
+                    result.add(l.split(".")[0])
                 else:
                     result.add(l)
         elif line.startswith("from"):
             ln = between(line, "from", "import").split(".")[0].strip()
             result.add(ln)
+    return result
 
+
+#@cov
+def ignore_included(result):
     # OMIT BUILTIN LIBRARY MODULES
-    builtins = built_in_modules("dict")
+    answer = list()
+    builtins = built_in_modules()
     for package in result:
         if package in builtins:
             pass
         else:
             answer.append(package)
-
-    return answer
-
-
-    # ----------------------- EOF -----------------------
+    return sorted(answer)
 
 
-# select string between 2 substrings
-def between(s, start, end):
-    return (s.split(start))[1].split(end)[0].strip()
-
-
-# prints to the console, now in technicolor!
-def terminal_output(*args):
-    import sys
-    for arg in args:
-        print("%s" % arg)
-
-
-# list of included modules within Python 3.7
-def built_in_modules(return_type="list"):
+#@cov
+def built_in_modules(return_type="set"):
+    # collection included modules within Python 3.7
     built_in_modules = {
         "__future__":"",
         "__main__":"",
@@ -300,6 +331,12 @@ def built_in_modules(return_type="list"):
         return set(built_in_modules)
 
 
+# prints to the console, now in technicolor!
+def terminal(*args):
+    for arg in args:
+        print("%s" % arg)
+
+
 # ----------------------- -----------------------
 def cli():
     import argparse
@@ -307,13 +344,19 @@ def cli():
     parser.add_argument('path', help='path of top-level directory, use `.` for cwd')
     # parser.add_argument('path', nargs='?', default=os.getcwd(), help='HINT: try running with `.`')
     args = parser.parse_args()
-    return args.path
+
+    path = args.path
+    if os.path.exists(path) or os.path.isdir(path):
+        return path
+    else:
+        raise PathError("%s" % path)
 
 
+# ----------------------- -----------------------
 def main():
     path = cli()
     pkgs = look(path)
-    terminal_output(*pkgs)
+    terminal(path, *pkgs)
 
 
 # ----------------------- -----------------------

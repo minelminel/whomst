@@ -20,12 +20,14 @@ ls -la /usr/local/bin/whomst
 
 echo "==>  test installation"
 cd ./tests
-x=`whomst | grep foo`
-# echo "x=$x"
-[ "$x" == "foo" ] && echo "ok" || echo "invalid"
-y=`whomst | grep bar`
-# echo "y=$y"
-[ "$y" == "bar" ] && echo "ok" || echo "invalid"
-z=`whomst | grep new`
-# echo "z=$z"
-[ "$z" == "new" ] && echo "ok" || echo "invalid"
+whomst .
+
+# x=`whomst | grep foo`
+# # echo "x=$x"
+# [ "$x" == "foo" ] && echo "ok" || echo "invalid"
+# y=`whomst | grep bar`
+# # echo "y=$y"
+# [ "$y" == "bar" ] && echo "ok" || echo "invalid"
+# z=`whomst | grep new`
+# # echo "z=$z"
+# [ "$z" == "new" ] && echo "ok" || echo "invalid"

@@ -1,14 +1,11 @@
 import os
 import pytest
 import whomst
-
-
-def make_path(*args):
-    loc = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(loc, *args)
+from . import make_path
 
 
 def test_cli_parser():
+    # should accept a path as argument
     pass
 
 
@@ -21,7 +18,7 @@ def test_basic_whomst():
 def test_medium_whomst():
     path = make_path("samples", "medium")
     res = whomst.look(path)
-    assert set(res) == {"foo"}
+    assert set(res) == {"bar", "foo"}
 
 
 def test_hard_whomst():
