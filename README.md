@@ -2,7 +2,6 @@
 #### mystery dependency detective & missing `requirements.txt` creator
 ```
 🦉 ~/whomst:$  whomst .
-.
 bar
 foo
 new
@@ -13,7 +12,6 @@ whomst
 🦉 ~/whomst:$  whomst . > requirements.txt
 
 🦉 ~/whomst:$  whomst . > requirements.txt && cat requirements.txt
-.
 bar
 foo
 new

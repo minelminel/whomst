@@ -123,7 +123,7 @@ def cli():
 def main():
     path = cli()
     pkgs = look(path)
-    terminal(path, *pkgs)
+    terminal(*pkgs)
 
 
 # ----------------------- -----------------------
