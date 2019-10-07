@@ -18,7 +18,7 @@ cd whomst
 chmod +x install
 ./install
 ```
-l
+
 3. Try it out!
 ```bash
 #

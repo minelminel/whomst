@@ -5,7 +5,7 @@
 ~$ whomst <path>
 ~$ whomst . > requirements.txt && pip install -r requirements.txt
 """
-def _main(path="."):
+def look(path="."):
     # ENTRYPOINT
     import os
     cursor = set()
@@ -58,18 +58,15 @@ def _main(path="."):
         else:
             answer.append(package)
 
-    # PRINT TO CONSOLE
-    terminal_output(*answer)
+    return answer
 
-    # CREATE REQUIREMENTS FILE
-    # touch_file(answer)
 
     # ----------------------- EOF -----------------------
 
 
 # select string between 2 substrings
 def between(s, start, end):
-    return (s.split(start))[1].split(end)[0]
+    return (s.split(start))[1].split(end)[0].strip()
 
 
 # prints to the console, now in technicolor!
@@ -77,18 +74,6 @@ def terminal_output(*args):
     import sys
     for arg in args:
         print("%s" % arg)
-
-
-# create new dependencies file
-def touch_file(packages, fname="requirements.txt"):
-    """
-    param: packages:     collection of type <str>
-    creates new file in current directory
-    """
-    cwd = os.getcwd()
-    with open(os.path.join(cwd, fname), "w") as f:
-        for item in packages:
-            f.write("%s\n" % item)
 
 
 # list of included modules within Python 3.7
@@ -308,21 +293,27 @@ def built_in_modules(return_type="list"):
     }
 
     if return_type == "list":
-        return built_in_modules
+        return list(built_in_modules.keys())
     elif return_type == "dict":
-        return dict.fromkeys(built_in_modules)
+        return built_in_modules
     elif return_type == "set":
         return set(built_in_modules)
 
 
 # ----------------------- -----------------------
-def main():
+def cli():
     import argparse
     parser = argparse.ArgumentParser(description='Detect external package dependencies')
     parser.add_argument('path', help='path of top-level directory, use `.` for cwd')
     # parser.add_argument('path', nargs='?', default=os.getcwd(), help='HINT: try running with `.`')
     args = parser.parse_args()
-    _main(path=args.path)
+    return args.path
+
+
+def main():
+    path = cli()
+    pkgs = look(path)
+    terminal_output(*pkgs)
 
 
 # ----------------------- -----------------------
