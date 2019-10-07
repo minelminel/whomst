@@ -5,7 +5,7 @@
 ~$ whomst <path>
 ~$ whomst . > requirements.txt && pip install -r requirements.txt
 """
-def main(path="."):
+def _main(path="."):
     # ENTRYPOINT
     import os
     cursor = set()
@@ -316,11 +316,15 @@ def built_in_modules(return_type="list"):
 
 
 # ----------------------- -----------------------
-if __name__ == "__main__":
-
+def main():
     import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('path', nargs='?', default=os.getcwd())
+    parser = argparse.ArgumentParser(description='Detect external package dependencies')
+    parser.add_argument('path', help='path of top-level directory, use `.` for cwd')
+    # parser.add_argument('path', nargs='?', default=os.getcwd(), help='HINT: try running with `.`')
     args = parser.parse_args()
+    _main(path=args.path)
 
-    main(path=args.path)
+
+# ----------------------- -----------------------
+if __name__ == "__main__":
+    main()
