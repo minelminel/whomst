@@ -116,7 +116,7 @@ def cli():
     path = args.path
     if os.path.exists(path) or os.path.isdir(path):
         return path
-    raise PathError("%s" % path)
+    raise FileNotFoundError("[No such path] %s" % path)
 
 
 # ----------------------- -----------------------
