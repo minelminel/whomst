@@ -13,7 +13,7 @@ echo "PWD: " `pwd`
 
 echo "==>  copying program files"
 # copy bin/whomst to /usr/bin
-sudo cp ./bin/whomst /usr/local/bin/whomst
+sudo cp ./whomst/__init__.py /usr/local/bin/whomst
 # ensure that whomst still has exec tag
 ls -la /usr/local/bin/whomst
 

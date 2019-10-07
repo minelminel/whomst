@@ -1,0 +1,4 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+echo "==>  uninstalling files"
+sudo rm -rf /usr/local/bin/whomst

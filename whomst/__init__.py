@@ -1,48 +1,62 @@
-def main():
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+~$ whomst .
+~$ whomst <path>
+~$ whomst . > requirements.txt && pip install -r requirements.txt
+"""
+def main(path="."):
     # ENTRYPOINT
     import os
     cursor = set()
     result = set()
     answer = []
-    exclude = set(['__pycache__', 'env', 'ENV', 'venv',
-                'VENV', 'site-packages', '*.egg-info'])
+    exclude = set([
+        "__pycache__",
+        "lib",
+        "env",
+        "ENV",
+        "venv",
+        "VENV",
+        "site-packages",
+        "*.egg-info",
+    ])
 
     # GATHER LIST OF ALL RELEVANT FILES
-    for root, dirs, files in os.walk('.'):
+    for root, dirs, files in os.walk(path):
         if any(excl in root for excl in exclude):
             continue
-        files[:] = [f for f in files if f.endswith('.py')]
+        files[:] = [f for f in files if f.endswith(".py")]
         for fname in files:
             # EXTRACT IMPORT STATEMENT LINES
             with open(os.path.join(root, fname)) as f:
                 file_data = f.read()
                 for line in file_data.splitlines():
-                    if 'import' in line and line.startswith(('import', 'from')):
+                    if "import" in line and line.startswith(("import", "from")):
                         cursor.add(line)
 
     # EXTRACT PACKAGE NAMES FROM IMPORT STATEMENTS
     for line in cursor:
-        if line.startswith('import'):
-            ln = line.strip('import').split(',')
+        if line.startswith("import"):
+            ln = line.strip("import").split(",")
             ln = list(map(str.strip, ln))
             for l in ln:
-                if ' as ' in l:
-                    l = l.split(' as ')[0].strip()
+                if " as " in l:
+                    l = l.split(" as ")[0].strip()
                     result.add(l)
                 else:
                     result.add(l)
-        elif line.startswith('from'):
-            ln = between(line, 'from', 'import').split('.')[0].strip()
+        elif line.startswith("from"):
+            ln = between(line, "from", "import").split(".")[0].strip()
             result.add(ln)
 
     # OMIT BUILTIN LIBRARY MODULES
-    builtins = built_in_modules('dict')
+    builtins = built_in_modules("dict")
     for package in result:
         if package in builtins:
             pass
         else:
             answer.append(package)
-
 
     # PRINT TO CONSOLE
     terminal_output(*answer)
@@ -62,23 +76,23 @@ def between(s, start, end):
 def terminal_output(*args):
     import sys
     for arg in args:
-        print(arg, file=sys.stdout)
+        print("%s" % arg)
 
 
 # create new dependencies file
-def touch_file(packages, fname='requirements.txt'):
-    '''
+def touch_file(packages, fname="requirements.txt"):
+    """
     param: packages:     collection of type <str>
     creates new file in current directory
-    '''
+    """
     cwd = os.getcwd()
-    with open(os.path.join(cwd, fname), 'w') as f:
+    with open(os.path.join(cwd, fname), "w") as f:
         for item in packages:
             f.write("%s\n" % item)
 
 
 # list of included modules within Python 3.7
-def built_in_modules(return_type='list'):
+def built_in_modules(return_type="list"):
     built_in_modules = {
         "__future__":"",
         "__main__":"",
@@ -293,12 +307,20 @@ def built_in_modules(return_type='list'):
         "zlib":"",
     }
 
-    if return_type == 'list':
+    if return_type == "list":
         return built_in_modules
-    elif return_type == 'dict':
+    elif return_type == "dict":
         return dict.fromkeys(built_in_modules)
-    elif return_type == 'set':
+    elif return_type == "set":
         return set(built_in_modules)
 
 
 # ----------------------- -----------------------
+if __name__ == "__main__":
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path', nargs='?', default=os.getcwd())
+    args = parser.parse_args()
+
+    main(path=args.path)
