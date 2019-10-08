@@ -113,7 +113,6 @@ def cli(arg):
     import argparse
     parser = argparse.ArgumentParser(description='Detect external package dependencies')
     parser.add_argument('path', help='path of top-level directory, use `.` for cwd')
-    print(arg)
     parsed = parser.parse_args(arg)
     path = parsed.path
     if os.path.exists(path) or os.path.isdir(path):
