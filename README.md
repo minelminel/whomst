@@ -1,5 +1,6 @@
 # whomst :owl:
 [![Build Status](https://travis-ci.org/minelminel/whomst.svg?branch=master)](https://travis-ci.org/minelminel/whomst)
+[![codecov](https://codecov.io/gh/minelminel/whomst/branch/master/graph/badge.svg)](https://codecov.io/gh/minelminel/whomst)
 #### mystery dependency detective & missing `requirements.txt` creator
 ```
 🦉 ~/whomst:$  whomst .
