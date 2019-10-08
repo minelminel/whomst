@@ -15,7 +15,7 @@ install:
 
 script:
   - pytest -v
-  - pytest --cov-report term-missing --cov whomst
+  - py.test --cov-report term-missing --cov whomst
 
 after_success:
   - codecov
