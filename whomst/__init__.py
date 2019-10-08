@@ -121,9 +121,11 @@ def cli(arg):
 
 
 # ----------------------- -----------------------
-def main():
+def main(arg=None):
     import sys
-    path = cli(sys.argv[1:])
+    if not arg:
+        arg = sys.argv[1:]
+    path = cli(arg)
     pkgs = look(path)
     terminal(*pkgs)
 
