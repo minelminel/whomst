@@ -4,10 +4,25 @@ import whomst
 from . import make_path
 
 
-def test_terminaloutput():
+def test_whomst_terminaloutput():
     msg = ["hello", "world"]
+    whomst.terminal(*msg)
     # assert whomst.terminal(msg) prints as <list>
     # assert whomst.terminal(*msg) prints as multiline <str>
+    pass
+
+
+def test_whomst_cli():
+    p = whomst.cli(".")
+    assert p == "."
+    p = make_path("samples")
+    assert p.split("/")[-1] == "samples"
+
+
+def test_whomst_cli_error():
+    # path = "xx"
+    # with pytest.raises(FileNotFoundError):
+    #     whomst.cli(path)
     pass
 
 

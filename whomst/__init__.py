@@ -109,12 +109,13 @@ def terminal(*args):
 
 
 # ----------------------- -----------------------
-def cli():
+def cli(arg):
     import argparse
     parser = argparse.ArgumentParser(description='Detect external package dependencies')
     parser.add_argument('path', help='path of top-level directory, use `.` for cwd')
-    args = parser.parse_args()
-    path = args.path
+    print(arg)
+    parsed = parser.parse_args(arg)
+    path = parsed.path
     if os.path.exists(path) or os.path.isdir(path):
         return path
     raise FileNotFoundError("[No such path] %s" % path)
@@ -122,7 +123,8 @@ def cli():
 
 # ----------------------- -----------------------
 def main():
-    path = cli()
+    import sys
+    path = cli(sys.argv[1:])
     pkgs = look(path)
     terminal(*pkgs)
 

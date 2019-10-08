@@ -4,8 +4,15 @@ import whomst
 from . import make_path
 
 
-def test_cli_parser():
-    # should accept a path as argument
+def test_main_procedure():
+    # whomst.main()
+    pass
+
+
+def test_entrypoint():
+    # import subprocess
+    # cmd = "whomst ."
+    # subprocess.call(cmd, shell=False)
     pass
 
 
