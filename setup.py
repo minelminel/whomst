@@ -5,11 +5,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    version="0.0.2",
+    version="0.0.3",
     name="whomst",
     author="minelminel",
     author_email="ctrlcmdspace@gmail.com",
-    short_description="infer Python package requirements",
+    description="infer Python package requirements",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/minelminel/whomst",
