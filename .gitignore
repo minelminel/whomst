@@ -1,6 +1,11 @@
 # Custom list
 examples/
+lib/
+bin/
 include/
+share/
+build/
+dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
