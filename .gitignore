@@ -1,6 +1,8 @@
 # Custom list
 examples/
 include/
+bin/
+share/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

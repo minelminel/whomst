@@ -51,7 +51,7 @@ def walk_files(path, exclude):
 
 
 def read_imports(full_name):
-    # IF LINE HAS `()` CAPTURE UNTIL IT CLOSES
+    # TODO: IF LINE HAS `()` CAPTURE UNTIL IT CLOSES
     cursor = set()
     with open(full_name) as f:
         file_data = f.read()
@@ -87,8 +87,9 @@ def clean_lines(cursor):
 def ignore_included(result):
     answer = list()
     builtins = built_in_modules()
+    commons = ["bin","lib","include","share","tests"]   # hack-y way to work this in
     for package in result:
-        if package in builtins:
+        if (package in builtins) or (package in commons):
             pass
         else:
             answer.append(package)
