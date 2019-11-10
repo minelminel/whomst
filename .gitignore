@@ -1,5 +1,7 @@
 # Custom list
 examples/
+lib/
+bin/
 include/
 bin/
 share/

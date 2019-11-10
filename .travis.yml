@@ -1,21 +1,22 @@
 sudo: false
-
 language: python
-
 python:
-  - "3.5"
-  - "3.6"
-  - "3.7-dev"
-  - "3.8-dev"
-  - "nightly"
-
+- '3.5'
+- '3.6'
+- 3.7-dev
+- 3.8-dev
+- nightly
 install:
-  - pip install pytest codecov pytest-cov
-  - pip install .
-
+- pip install pytest codecov pytest-cov twine
+- pip install .
 script:
-  - pytest -v
-  - py.test --cov-report term-missing --cov whomst
-
+- pytest -v
+- py.test --cov-report term-missing --cov whomst
 after_success:
-  - codecov
+- codecov
+deploy:
+  provider: pypi
+  user: minelminel
+  password:
+    secure: G06j2tP/DaMzMD1jh6xlDtIu5lA3sgRV9QpEh9fuuVg6TmX1RRV3nH9DnLyyH0BfbLuv7mrP2S+jW21U6yjGcAGGBd8hxPVWGzTr+UZoCj0DPSwAhiCBxRGGS7wCcVUHxWfCvqVfwVMo+XAXfRlY4fbXWKSMwerEliBtpNjSlXOJcq2aBT6rapj7asUI0PKCCixPrfN8VIzLo+TqErkm31ptEAQlFQbw6/ci9clbClxsYW+qNwslfD/DepxIsxW1tnzG98JPoqsIvJKxALZpvhFJqJfdWvyCMN4IuyGgjNjpsuF6l4NGnfXdhXwOiJLUjnfSCBGuDjgqh9cF7Vl0cGw3Rf5KfVRjevx8VefwBLRfJH8C9xsxVyJ3EbWJcwzXLH1BIu67rApfwRl9iOhpUPd5C4eHSL0AhnHbvc4bU87J5gsWh2XhLAXuOceSJx+8LvuE0MJvh30/hIbuMisTeTxAOhATmK7OK2mYG3MvRZc/ROKwyennnvtRDxenLZ5x+WQo8R2d7El9W7t6+R8GVxrf2uedrBMAKc/EHRRWC5REwx7xt8AHymRsl8Rl3pF8sQ6Mn5856Hth8HJDPehj+E934tSXWWQogPftB7FSwsjMoC7MlhXYvvcK7xbuiTuI4osr8u8rYx/Et0Ta/7eSiZ318+n/Rs7cQnEinR2dN2Y=
+  distributions: sdist bdist_wheel
