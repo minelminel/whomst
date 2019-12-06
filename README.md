@@ -2,6 +2,10 @@
 [![Build Status](https://travis-ci.org/minelminel/whomst.svg?branch=master)](https://travis-ci.org/minelminel/whomst)
 [![codecov](https://codecov.io/gh/minelminel/whomst/branch/master/graph/badge.svg)](https://codecov.io/gh/minelminel/whomst)
 #### mystery dependency detective & missing `requirements.txt` creator
+---
+### now on PyPI!!! 🤗 `pip install whomst`
+---
+
 ```
 🦉 ~/whomst:$  whomst .
 bar
@@ -21,23 +25,10 @@ pytest
 setuptools
 whomst
 ```
-
 ---
-### `/usr/bin`
-```bash
-git clone https://github.com/minelminel/whomst.git
-cd whomst
-./install
-```
-
-### `/site-packages/`
+### Install from source
 ```bash
 git clone https://github.com/minelminel/whomst.git
 cd whomst
 pip install -e .
-```
-
-### Uninstall
-```bash
-cd whomst && ./uninstall
 ```
