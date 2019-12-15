@@ -3,7 +3,7 @@ import whomst
 def test_cli():
     _input = ['.', '--verbose', '--skip', 'foo', 'bar']
     args = whomst.cli(_input)
-    assert not args
+    assert args
 
 
 def test_logging():
