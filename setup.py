@@ -8,7 +8,7 @@ setup(
     version="0.0.4",
     name="whomst",
     author="minelminel",
-    description="infer Python package requirements",
+    description="Infer Python package requirements",
     url="https://github.com/minelminel/whomst",
     license='MIT',
     author_email="ctrlcmdspace@gmail.com",

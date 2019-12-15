@@ -12,7 +12,6 @@ bar
 foo
 new
 pytest
-setuptools
 whomst
 
 🦉 ~/whomst:$  whomst . > requirements.txt
@@ -22,7 +21,6 @@ bar
 foo
 new
 pytest
-setuptools
 whomst
 ```
 ---

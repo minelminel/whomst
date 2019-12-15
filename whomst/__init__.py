@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os, sys
 """
 usage: whomst [-h] [-s SKIP [SKIP ...]] [-e] [-v] path
 
@@ -18,6 +17,8 @@ optional arguments:
 
 $ whomst {path} > requirements.txt
 """
+import os, sys, argparse
+
 def walk_files(path, exclude, verbose=False):
     """
     Generator which yields an absolute path to all Python files
@@ -27,13 +28,28 @@ def walk_files(path, exclude, verbose=False):
     @param: path        path to top-level directory to recursively search
     @param: exclude     <set 'str'> names of directories to omit if in path
     """
-    if verbose: info("path", path)
+
+    # If supplied path resolves to a single file, return a singular reference.
+    # This allows the same procedure to be used within the main procedure,
+    # with the loop only running one time.
+    if os.path.isfile(path):
+        yield path
+
+    # Otherwise, we can assume the supplied path is a reference to a directory,
+    # in which case we will have to recursively explore the contained files.
     for root, dirs, files in os.walk(path):
+
+        # Bypass any paths containing one of the specified exlusion directories
         if any(excl in root for excl in exclude):
             continue
+
+        # Only concerned with `.py` files, important to note that executable files
+        # with a valid Python #!/ she-bang will NOT be caught by this procedure.
+        # This is a sufficiently nuanced edge case for us to not concern ourselves with.
         files[:] = [f for f in files if f.endswith(".py")]
         for file in files:
             yield os.path.join(root, file)
+    # --[EOF]--
 
 
 def make_exclusions(skip=[], exhaustive=False, verbose=False, **kwargs):
@@ -46,17 +62,28 @@ def make_exclusions(skip=[], exhaustive=False, verbose=False, **kwargs):
     @param: skip           <list> directory names to skip
     @param: exhaustive     <bool> override all exclusions
     """
-    if exhaustive:
-        return set()
-    exclude = set(
-        ["__pycache__", ".git", "lib",
-        "env", "ENV", "venv", "VENV",
-        "site-packages", ".egg-info"]
-    )
+    exclude = set()
+
+    # If the user has supplied additional elements, include them
     if skip:
         exclude = exclude.union(skip)
-    if verbose: info("skip", exclude)
+
+    # If `exhaustive` is True, do not omit ANY directories. This is useful
+    # in cases where a Python repo might be part of a larger, multi-language repo.
+    if not exhaustive:
+        # Include a base set of common directories to ignore, both to
+        # speed-up the search by skipping irrelevant paths, as well as
+        # to avoid searching virtual environment assets.
+        commons = ["__pycache__","lib","bin","site-packages",
+                "env","ENV","venv","VENV",".egg-info",".git"]
+        exclude = exclude.union(commons)
+
+    # Display the collection of directories we are skipping, to aid with debugging.
+    if verbose:
+        info("skip", exclude or {})
+
     return exclude
+    # --[EOF]--
 
 
 def read_imports(full_name):
@@ -68,33 +95,40 @@ def read_imports(full_name):
 
     @param: full_name       <str> abspath to python file
     """
-    # TODO: IF LINE HAS `()` CAPTURE UNTIL IT CLOSES
     # TODO: do this with RegEx capture groups
+    # TODO: IF LINE HAS `()` CAPTURE UNTIL IT CLOSES
+
     cursor = set()
-    capture,cache = False,[]
+
+    # Read the contents of the file and return a list of all lines
     with open(full_name) as f:
         lines = f.read().splitlines()
+
+    # Core of the operation right here. Check all elements in the
+    # lines of lines and capture all lines containing an import statement.
     for line in lines:
         if line.startswith("#"):
             continue
-        # elif capture:
-        #     cache.append(line)
-        #     if ")" in line:
-        #         capture = False
-        #         cursor.add(' '.join(cache))
-        #         cache.clear()
-        #
-        # elif ( "(" in line ) and ( ")" not in line ):
-        #     capture = True
-        #     cache.append(line)
+
+        # Ensure that line starts with a valid statement, this is
+        # useful for ignoring invalid matches like when the word `import`
+        # appears in a function name, or when there is a variable called
+        # `_import` or something similar.
         elif "import" in line and line.startswith(("import", "from")):
             cursor.add(line)
+
     return cursor
+    # --[EOF]--
 
 
 def between(s, start, end):
     """
     Extracts contents between 2 bookend strings, non-inclusive.
+
+    >>> s = 'from numpy import my_array, my_matrix'
+    >>> start,end = 'from','import'
+    >>> between(s,start,end)
+    'numpy'
 
     @param: s         <str> the string to be extracted from
     @param: start     <str> opening capture
@@ -113,39 +147,84 @@ def clean_lines(cursor):
     @param: cursor      <set> strings of import statements
     """
     result = set()
+
+    # Extract only the top-level package names from import statements
     for line in cursor:
+
+        # Case 1:: `import PKG ...`
         if line.startswith("import"):
+            # Remove `import` from line, split into separate packages
             ln = line.replace("import", "").split(",")
+            # Remove leading+trailing whitespace so that condition
+            # checks like .startswith() will behave as desired.
             ln = list(map(str.strip, ln))
+            # focus on each statement from the single line
             for l in ln:
+
+                # Case 1a:: `import PGK as some_alias ...`
                 if " as " in l:
                     l = l.split(" as ")[0].strip()
                     l = l.split(".")[0]
                     result.add(l)
+
+                # Case 1b:: `import .PKG as relative_alias`
+                # we can disregard relative imports since they
+                # can safely be assumed to be from the same package
+                elif l.startswith("."):
+                    continue
+
+                # Case 1c:: `import torch.nn.Functional as F`
+                # we want to isolate the top-level package
                 elif "." in l:
                     l = l.split(".")[0]
                     result.add(l)
+
+                # If all previous conditionals fail, the statement
+                # can be considered a vanilla import and is safe as-is
                 else:
                     result.add(l)
+
+        # Case 2:: `from PKG import ...`
         elif line.startswith("from"):
+            # `import numpy as np` --> `np`
             ln = between(line, "from", "import")
+            # ignore relative imports
             if not ln.startswith("."):
                 ln = ln.split(".")[0].strip()
                 result.add(ln)
+
+    # Omit any empty strings that may have slipped through
     no_empties = filter(bool, result)
     return sorted(no_empties)
+    # --[EOF]--
 
 
-def ignore_included(cursor, builtins):
+def ignore_included(cursor, builtins, all_imports=False):
     """
     Cross-reference the import list with the Python standard library.
+    Allow for bypassing such that ALL non-relative imports are included.
+
+    @param: cursor          <set> strings, captured import statements
+    @param: builtins        <set> strings, standard library packages
+    @param: all_imports     <bool> include standard library imports
     """
+    # If specified, return ALL imports, include those from standard library
+    if all_imports:
+        return sorted(list(cursor))
+
     result = []
+    # Disregard some basic, vague elements that might have slipped through
     commons = set(["bin","lib","include","share","tests"])
+
+    # Ensure that all captured packages are outside the standard library
     for pkg in cursor:
-        if (pkg not in builtins) and (pkg not in commons):
-            result.append(pkg)
+        if (pkg not in commons):
+            if (pkg not in builtins):
+                result.append(pkg)
+
+    # Alphabetize the list as a convenience for the user
     return sorted(result)
+    # --[EOF]--
 
 
 def terminal(*args):
@@ -153,18 +232,20 @@ def terminal(*args):
         print("{}".format(arg))
 
 
-def info(label, msg):
-    print("==> [{}] {}".format(label, msg))
+def info(label, *msg):
+    if len(msg) < 2:
+        print("==> [{}] {}".format(label, *msg))
+    else:
+        print("==> [{}]".format(label))
+        for m in msg:
+            print(m)
 
 
-def cli():
+def cli(args=sys.argv[1:]):
     """
-    # TODO: add support for omitting additional provided dir names
-    # TODO: add support for not omitting any exclude dirs
-    # TODO: add verbose mode that prints the search path, exclude dirs, files searched, raw statements found
-    # TODO: add support for including standard library imports as well
+    Command-line interface, entrypoint for package.
     """
-    import argparse
+
     ap = argparse.ArgumentParser(
         prog='whomst',
         description='Easily preview package dependencies for Python repositories',
@@ -189,29 +270,63 @@ def cli():
         help="Bypass omitted directories (VENV, etc.) and show all discovered imports",
     )
     ap.add_argument(
+        '-a',
+        '--all-imports',
+        default=False,
+        action="store_true",
+        help="Include standard library package imports in result",
+    )
+    ap.add_argument(
         '-v',
         '--verbose',
         default=False,
         action="store_true",
         help="Print operational info (useful for debugging)",
     )
-    args = ap.parse_args()
-    if os.path.exists(args.path) or os.path.isdir(args.path):
-        return args
-    raise FileNotFoundError("[InvalidPath] %s" % args.path)
+
+    return ap.parse_args(args)
+    # --[EOF]--
+
+
+def preflight(args):
+    """
+    Perform checks on supplied arguments, consolidate path, etc.
+
+    @param: args    <Namespace> argparse parsed result
+    """
+    # Treat paths as relative to the calling directory
+    here = os.getcwd()
+    if args.verbose: info("here", here)
+
+    # Valid path to directory. Reduce the path, replacing relative refs
+    if os.path.isdir(args.path):
+        args.path = os.path.normpath(os.path.join(here, args.path))
+        if args.verbose: info("args", args.__dict__)
+    # Valid path to a file. Reduce the path, replacing relative refs
+    elif os.path.isfile(args.path):
+        args.path = os.path.normpath(os.path.join(here, args.path))
+        if args.verbose: info("args", args.__dict__)
+    else:
+        # Fail if the supplied path does not exist, or if formatted incorrectly
+        print("* ERROR - InvalidPath {}".format(args.path))
+        sys.exit(1)
+
+    return args
+    # --[EOF]--
 
 
 def main():
-    args = cli()
+    args = preflight(cli())
     exclude = make_exclusions(args.skip, args.exhaustive, args.verbose)
     cursor = set()
     for abspath in walk_files(args.path, exclude, verbose=args.verbose):
         lines = read_imports(abspath)
         cursor = cursor.union(lines)
     cursor = clean_lines(cursor)
-    final = ignore_included(cursor, builtins)
+    final = ignore_included(cursor, builtins, args.all_imports)
     terminal(*final)
     sys.exit(0)
+    # --[EOF]--
 
 
 builtins = set([
