@@ -18,6 +18,7 @@ optional arguments:
 
 $ whomst {path} > requirements.txt
 """
+__version__ = "0.0.5"
 import os, sys, argparse
 
 def walk_files(path, exclude, verbose=False):
@@ -231,6 +232,12 @@ def cli(args=sys.argv[1:]):
         prog='whomst',
         description='Easily preview package dependencies for Python repositories',
         epilog="$ whomst {path} > requirements.txt"
+    )
+    ap.add_argument(
+        '-V',
+        '--version',
+        action='version',
+        version='%(prog)s {}'.format(__version__),
     )
     ap.add_argument(
         'path',

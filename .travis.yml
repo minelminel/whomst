@@ -14,6 +14,13 @@ script:
 - py.test --cov-report term-missing --cov whomst
 after_success:
 - codecov
+
+  if ([ "$TRAVIS_BRANCH" == "master" ] || [ ! -z "$TRAVIS_TAG" ]) &&
+      [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    echo "This will deploy!"
+  else
+    echo "This will not deploy!"
+  fi
 # deploy:
 #   provider: pypi
 #   user: minelminel

@@ -69,8 +69,24 @@ def test_preflight():
 
 
 def test_make_exclusions():
+    excluded = whomst.make_exclusions(skip=[], exhaustive=True, verbose=False)
+    assert len(excluded) == 0
 
-    pass
+    excluded = whomst.make_exclusions(skip=[], exhaustive=False, verbose=False)
+    assert len(excluded) > 0
+
+    excluded = whomst.make_exclusions(skip=["foo","bar"], exhaustive=False, verbose=False)
+    assert [e in excluded for e in ("foo", "bar")]
+
+
+def test_between():
+    s = "from pkg import foo, bar"
+    res = whomst.between(s, "from", "import")
+    assert res == "pkg"
+
+    s = "from pkg.module import foo, bar"
+    res = whomst.between(s, "from", "import")
+    assert res == "pkg.module"
 
 
 def test_walk_files():

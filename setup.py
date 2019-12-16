@@ -1,12 +1,16 @@
 import os
 from setuptools import setup
 
-with open("README.md", "r") as fh:
+from whomst import __version__
+name = "whomst"
+here = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(here, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setup(
-    version="0.0.4",
-    name="whomst",
+    version=__version__,
+    name=name,
     author="minelminel",
     description="Infer Python package requirements",
     url="https://github.com/minelminel/whomst",
